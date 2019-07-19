@@ -252,13 +252,13 @@ class ProjectPage extends Component {
               </Button>,
             ]}
             {isMJMLFile && [
+              <Button key="importjson" transparent onClick={this.handleImportjson}>
+                <IconJson style={{ marginRight: 5 }} />
+                {'Newsletter Json'}
+              </Button>,
               <Button key="beautify" transparent onClick={this.handleBeautify}>
                 <IconBeautify style={{ marginRight: 5 }} />
                 {'Beautify'}
-              </Button>,
-              <Button key="importjson" transparent onClick={this.handleImportjson}>
-                <IconJson style={{ marginRight: 5 }} />
-                {'Import Json'}
               </Button>,
             ]}
             <Button transparent onClick={this.handleOpenInBrowser}>
