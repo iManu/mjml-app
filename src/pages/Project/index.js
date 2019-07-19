@@ -10,6 +10,7 @@ import IconCamera from 'react-icons/md/camera-alt'
 import IconEmail from 'react-icons/md/email'
 import IconAdd from 'react-icons/md/note-add'
 import IconBeautify from 'react-icons/md/autorenew'
+import IconJson from 'react-icons/md/add'
 import IconSave from 'react-icons/md/save'
 import fs from 'fs'
 import { shell, clipboard } from 'electron'
@@ -20,8 +21,9 @@ import defaultMJML from 'data/defaultMJML'
 import { openModal } from 'reducers/modals'
 import { addAlert } from 'reducers/alerts'
 import { setPreview } from 'actions/preview'
+import { setJsonData } from 'actions/jsonData'
 
-import { fileDialog, saveDialog, fsWriteFile } from 'helpers/fs'
+import { fileDialog, saveDialog, fsReadFile, fsWriteFile } from 'helpers/fs'
 
 import Button from 'components/Button'
 import ButtonDropdown from 'components/Button/ButtonDropdown'
@@ -34,6 +36,8 @@ import RemoveFileModal from './RemoveFileModal'
 
 import { takeScreenshot, cleanUp } from 'helpers/takeScreenshot'
 
+const { dialog } = require('electron').remote
+
 @connect(
   state => ({
     preview: state.preview,
@@ -41,11 +45,13 @@ import { takeScreenshot, cleanUp } from 'helpers/takeScreenshot'
     beautifyOutput: state.settings.getIn(['mjml', 'beautify']),
     checkForRelativePaths: state.settings.getIn(['mjml', 'checkForRelativePaths']),
     preventAutoSave: state.settings.getIn(['editor', 'preventAutoSave']),
+    jsonData: state.jsonData,
   }),
   {
     openModal,
     addAlert,
     setPreview,
+    setJsonData,
   },
 )
 class ProjectPage extends Component {
@@ -60,9 +66,41 @@ class ProjectPage extends Component {
 
   componentWillUnmount() {
     this.props.setPreview(null)
+    this.props.setJsonData(null)
   }
 
   handleBeautify = () => this._editor.beautify()
+
+
+  handleImportjson = () => {
+    const { setJsonData } = this.props
+    dialog.showOpenDialog({}, files => {
+      if (files && files.length > 0) {
+        async (dispatch) => {
+          try {
+
+            const res = await fsReadFile(files[0], { encoding: 'utf8' })
+            console.log('res', JSON.parse(res)[0]);
+            dispatch(setJsonData(JSON.parse(res)[0]))
+            const loadNotification = new Notification('NL JSON - Load', {
+              body: 'Json Chargé',
+            })
+          } catch (e) {
+            console.log('Json Load Error', e);
+          }
+        }
+        // => {
+        //   if (!err) {
+        //     console.log('json', JSON.parse(res)[0])
+        //     setJsonData(JSON.parse(res)[0])
+        //     const loadNotification = new Notification('NL JSON - Load', {
+        //       body: 'Json Chargé',
+        //     })
+        //   }
+        // })
+      }
+    })
+  }
 
   handlePathChange = path => this.setState({ path, activeFile: null })
 
@@ -227,6 +265,10 @@ class ProjectPage extends Component {
               <Button key="beautify" transparent onClick={this.handleBeautify}>
                 <IconBeautify style={{ marginRight: 5 }} />
                 {'Beautify'}
+              </Button>,
+              <Button key="importjson" transparent onClick={this.handleImportjson}>
+                <IconJson style={{ marginRight: 5 }} />
+                {'Import Json'}
               </Button>,
             ]}
             <Button transparent onClick={this.handleOpenInBrowser}>

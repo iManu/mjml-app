@@ -4,38 +4,11 @@ import { createAction } from 'redux-actions'
 import mjml2html from 'helpers/mjml'
 import { fsReadFile } from 'helpers/fs'
 import { updateProjectPreview } from 'actions/projects'
-// import userVars from 'data/userVars'
+import parseVars from 'helpers/parseVars'
 
-let userVars
-const { dialog } = require('electron').remote
-
-dialog.showOpenDialog({}, files => {
-  if (files && files.length > 0) {
-    fsReadFile(files[0], 'utf8', (err, res) => {
-      if (!err) {
-        // editorGlobal.setModel(monacoGlobal.editor.createModel(res, 'javascript'));
-
-        userVars = JSON.parse(res)[0]
-        const loadNotification = new Notification('NL JSON - Load', {
-          body: 'Json Chargé',
-        })
-      }
-    })
-  }
-})
 const setPrev = createAction('SET_PREVIEW')
 
-function getValue(object, keys) {
-  return keys.split('.').reduce((o, k) => {
-    return (o || {})[k];
-  }, object);
-}
-
-const parseVars = html => {
-  return html.replace(/{([^}]*)}/g, (r,k)=>getValue(userVars, k))
-}
-
-export function setPreview(fileName, content = '') {
+export function setPreview(fileName, content = '', userVars = null) {
   return async (dispatch, getState) => {
     if (!fileName) {
       return dispatch(setPrev(null))
@@ -52,12 +25,14 @@ export function setPreview(fileName, content = '') {
     const mjmlManual = settings.getIn(['mjml', 'engine']) === 'manual'
     const mjmlPath = mjmlManual ? settings.getIn(['mjml', 'path']) : undefined
 
+
+    
     switch (ext) {
       case '.html': // eslint-disable-line no-case-declarations
         if (!content) {
           content = await fsReadFile(fileName, { encoding: 'utf8' })
         }
-        const finalcontent = parseVars(content)
+        const finalcontent = parseVars(content, userVars)
         dispatch(setPrev({ type: 'html', finalcontent }))
         break
       case '.jpg':
@@ -73,7 +48,7 @@ export function setPreview(fileName, content = '') {
           minify: settings.getIn(['mjml', 'minify']),
         }
         const { html, errors } = await mjml2html(content, fileName, mjmlPath, renderOpts)
-        const final = parseVars(html)
+        const final = parseVars(html, userVars)
 
         dispatch(setPrev({ type: 'html', content: final, errors }))
         // update the preview in project
