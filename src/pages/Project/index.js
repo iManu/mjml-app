@@ -16,12 +16,14 @@ import fs from 'fs'
 import { shell, clipboard } from 'electron'
 import beautifyJS from 'js-beautify'
 
+import storage from 'electron-json-storage'
+
 import defaultMJML from 'data/defaultMJML'
 
 import { openModal } from 'reducers/modals'
 import { addAlert } from 'reducers/alerts'
 import { setPreview } from 'actions/preview'
-import { setJsonData } from 'actions/jsonData'
+// import { setJsonData } from 'actions/jsonData'
 
 import { fileDialog, saveDialog, fsReadFile, fsWriteFile } from 'helpers/fs'
 
@@ -45,13 +47,13 @@ const { dialog } = require('electron').remote
     beautifyOutput: state.settings.getIn(['mjml', 'beautify']),
     checkForRelativePaths: state.settings.getIn(['mjml', 'checkForRelativePaths']),
     preventAutoSave: state.settings.getIn(['editor', 'preventAutoSave']),
-    jsonData: state.jsonData,
+    // jsonData: state.jsonData,
   }),
   {
     openModal,
     addAlert,
     setPreview,
-    setJsonData,
+    // setJsonData,
   },
 )
 class ProjectPage extends Component {
@@ -73,31 +75,19 @@ class ProjectPage extends Component {
 
 
   handleImportjson = () => {
-    const { setJsonData } = this.props
+    // const { setJsonData } = this.props
     dialog.showOpenDialog({}, files => {
       if (files && files.length > 0) {
-        async (dispatch) => {
-          try {
+        fsReadFile(files[0], 'utf8', (err, res) => {
+          if (!err) {
+            // setJsonData(JSON.parse(res)[0])
+            window.localStorage.setItem('jsonData', res)
 
-            const res = await fsReadFile(files[0], { encoding: 'utf8' })
-            console.log('res', JSON.parse(res)[0]);
-            dispatch(setJsonData(JSON.parse(res)[0]))
             const loadNotification = new Notification('NL JSON - Load', {
               body: 'Json Chargé',
             })
-          } catch (e) {
-            console.log('Json Load Error', e);
           }
-        }
-        // => {
-        //   if (!err) {
-        //     console.log('json', JSON.parse(res)[0])
-        //     setJsonData(JSON.parse(res)[0])
-        //     const loadNotification = new Notification('NL JSON - Load', {
-        //       body: 'Json Chargé',
-        //     })
-        //   }
-        // })
+        })
       }
     })
   }
