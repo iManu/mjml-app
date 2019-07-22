@@ -37,6 +37,7 @@
     "js-beautify": "^1.7.5",
     "mjml": "^4.3.1",
     "mjml-migrate": "^4.3.1",
+    "mustache": "^3.0.1",
     "ncp": "^2.0.0",
     "node-mailjet": "^3.2.1",
     "react": "^16.2.0",

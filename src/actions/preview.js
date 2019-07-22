@@ -5,6 +5,7 @@ import mjml2html from 'helpers/mjml'
 import { fsReadFile } from 'helpers/fs'
 import { updateProjectPreview } from 'actions/projects'
 import parseVars from 'helpers/parseVars'
+import mustache from 'mustache'
 // import { loadJsonData } from 'actions/jsonData'
 
 // import storage from 'electron-json-storage'
@@ -43,11 +44,14 @@ export function setPreview(fileName, content = '') {
         if (!content) {
           content = await fsReadFile(fileName, { encoding: 'utf8' })
         }
-        // console.log('loadJsonData lol', jsonData)
 
+        // eslint-disable-next-line prefer-destructuring
         userVars = JSON.parse(window.localStorage.getItem('jsonData'))[0]
 
-        const finalcontent = parseVars(content, userVars)
+        // console.log('must', mustache.render(content, userVars))
+        const finalcontent = mustache.render(content, userVars)
+        // const finalcontent = parseVars(content, userVars)
+
         dispatch(setPrev({ type: 'html', finalcontent }))
         break
       case '.jpg':
@@ -62,11 +66,15 @@ export function setPreview(fileName, content = '') {
         const renderOpts = {
           minify: settings.getIn(['mjml', 'minify']),
         }
-        const { html, errors } = await mjml2html(content, fileName, mjmlPath, renderOpts)
-
+        // eslint-disable-next-line prefer-destructuring
         userVars = JSON.parse(window.localStorage.getItem('jsonData'))[0]
 
-        const final = parseVars(html, userVars)
+        const { html, errors } = await mjml2html(content, fileName, mjmlPath, renderOpts)
+
+
+        const final = mustache.render(html, userVars)
+        
+        // const final = parseVars(html, userVars)
 
         dispatch(setPrev({ type: 'html', content: final, errors }))
         // update the preview in project
