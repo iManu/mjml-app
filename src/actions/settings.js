@@ -53,9 +53,9 @@ export function loadSettings() {
         LastEmails: [],
       },
       previewSize: {
-        current: 500,
+        current: 1000,
         mobile: 320,
-        desktop: 650,
+        desktop: 1000,
       },
       snippets: [],
     })

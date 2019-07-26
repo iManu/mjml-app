@@ -4,7 +4,7 @@ import { createAction } from 'redux-actions'
 import mjml2html from 'helpers/mjml'
 import { fsReadFile } from 'helpers/fs'
 import { updateProjectPreview } from 'actions/projects'
-import parseVars from 'helpers/parseVars'
+// import parseVars from 'helpers/parseVars'
 import mustache from 'mustache'
 // import { loadJsonData } from 'actions/jsonData'
 
